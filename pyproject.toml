@@ -1,0 +1,26 @@
+[project]
+name = "fastapi_clerk_auth"
+version = "0.0.1"
+description = "FastAPI Auth Middleware for [Clerk](https://clerk.com)"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "OSS Mafia", email = "dev@oss-mafia.com" },
+]
+dependencies = [
+    "fastapi>=0.95.0",
+    "PyJWT>=2.0.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/OSSMafia/fastapi-clerk-middleware"
+"Source" = "https://github.com/OSSMafia/fastapi-clerk-middleware"
+
+[tools.setuptools.packages.find]
+where = "fastapi_clerk_auth/"
+include = ["fastapi_clerk_auth"]
+namespaces = true
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
