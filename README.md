@@ -5,7 +5,7 @@ FastAPI Auth Middleware for [Clerk](https://clerk.com)
 
 ## Install
 ```bash
-pip install fastapi-clerk
+pip install fastapi-clerk-auth
 ```
 
 ## Basic Usage
