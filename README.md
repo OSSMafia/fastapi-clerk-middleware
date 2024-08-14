@@ -3,6 +3,8 @@
 
 FastAPI Auth Middleware for [Clerk](https://clerk.com)
 
+Easily setup authentication on your API routes using your Clerk JWKS endpoint.
+
 ## Install
 ```bash
 pip install fastapi-clerk-auth
@@ -19,9 +21,9 @@ app = FastAPI()
 
 clerk_config = ClerkConfig(jwks_url="https://example.com/.well-known/jwks.json") # Use your Clerk JWKS endpoint
 
-clear_auth_guard = ClerkHTTPBearer(config=clerk_config)
+clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
 
 @app.get("/")
-async def read_root(credentials: HTTPAuthorizationCredentials | None = Depends(clear_auth_guard)):
+async def read_root(credentials: HTTPAuthorizationCredentials | None = Depends(clerk_auth_guard)):
     return JSONResponse(content=jsonable_encoder(credentials))
 ```
