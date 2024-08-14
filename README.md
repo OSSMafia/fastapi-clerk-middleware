@@ -27,3 +27,18 @@ clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
 async def read_root(credentials: HTTPAuthorizationCredentials | None = Depends(clerk_auth_guard)):
     return JSONResponse(content=jsonable_encoder(credentials))
 ```
+
+The returned `credentials` model will either be of type `None` or `HTTPAuthorizationCredentials`. If the model is populated it will have the following properties:
+- scheme
+    - Indicates the scheme of the Authorization header (Bearer) 
+- credentials
+    - Raw token received from the Authorization header
+- decoded
+    - The payload of the decoded token
+
+## Auto Errors
+By default the middleware automatically returns 403 errors if the token is missing or invalid. You can disable that behavior by setting the following:
+```python
+clerk_config = ClerkConfig(jwks_url="https://example.com/.well-known/jwks.json", auto_error=False)
+```
+This will allow requests to reach the endpoint for additional logic or error handling.
