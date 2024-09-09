@@ -10,6 +10,7 @@ authors = [
 dependencies = [
     "fastapi>=0.95.0",
     "PyJWT>=2.0.0",
+    "cryptography==43.0.1",
 ]
 
 [project.urls]
