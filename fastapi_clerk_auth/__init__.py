@@ -5,7 +5,9 @@ from fastapi import HTTPException
 from fastapi import Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
-from fastapi.security import HTTPAuthorizationCredentials as FastAPIHTTPAuthorizationCredentials
+from fastapi.security import (
+    HTTPAuthorizationCredentials as FastAPIHTTPAuthorizationCredentials,
+)
 from fastapi.security import HTTPBearer
 from fastapi.security.utils import get_authorization_scheme_param
 import jwt
@@ -94,7 +96,12 @@ class ClerkHTTPBearer(HTTPBearer):
         ] = False,
         debug_mode: bool = False,
     ):
-        super().__init__(bearerFormat=bearerFormat, scheme_name=scheme_name, description=description, auto_error=auto_error)
+        super().__init__(
+            bearerFormat=bearerFormat,
+            scheme_name=scheme_name,
+            description=description,
+            auto_error=auto_error,
+        )
         self.model = HTTPBearerModel(bearerFormat=bearerFormat, description=description)
         self.scheme_name = scheme_name or self.__class__.__name__
         self.auto_error = auto_error
@@ -118,7 +125,9 @@ class ClerkHTTPBearer(HTTPBearer):
 
     def _check_config(self) -> None:
         if not self.config.audience and self.config.verify_aud:
-            raise ValueError("Audience must be set in config because verify_aud is True")
+            raise ValueError(
+                "Audience must be set in config because verify_aud is True"
+            )
         if not self.config.issuer and self.config.verify_iss:
             raise ValueError("Issuer must be set in config because verify_iss is True")
 
@@ -143,12 +152,16 @@ class ClerkHTTPBearer(HTTPBearer):
                 raise e
             return None
 
-    async def __call__(self, request: Request) -> Optional[HTTPAuthorizationCredentials]:
+    async def __call__(
+        self, request: Request
+    ) -> Optional[HTTPAuthorizationCredentials]:
         authorization = request.headers.get("Authorization")
         scheme, credentials = get_authorization_scheme_param(authorization)
         if not (authorization and scheme and credentials):
             if self.auto_error:
-                raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not Authenticated")
+                raise HTTPException(
+                    status_code=HTTP_403_FORBIDDEN, detail="Not Authenticated"
+                )
             return None
         if scheme.lower() != "bearer":
             if self.auto_error:
@@ -164,7 +177,9 @@ class ClerkHTTPBearer(HTTPBearer):
                 status_code=HTTP_403_FORBIDDEN,
                 detail="Invalid Authentication Credentials",
             )
-        response = HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials, decoded=decoded_token)
+        response = HTTPAuthorizationCredentials(
+            scheme=scheme, credentials=credentials, decoded=decoded_token
+        )
         if self.add_state:
             request.state.clerk_auth = response
         return response

@@ -1,8 +1,8 @@
 # FastAPI Clerk Auth Middleware
 
 [![PyPI version](https://img.shields.io/pypi/v/fastapi-clerk-auth.svg)](https://pypi.org/project/fastapi-clerk-auth/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-clerk-auth.svg)](https://pypi.org/project/fastapi-clerk-auth/)
-[![License](https://img.shields.io/github/license/yourusername/fastapi-clerk-auth.svg)](https://github.com/OSSMafia/fastapi-clerk-middleware/blob/main/LICENSE)
+[![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-clerk-auth)](https://pypi.org/project/fastapi-clerk-auth/)
+[![License](https://img.shields.io/github/license/OSSMafia/fastapi-clerk-middleware)](https://github.com/OSSMafia/fastapi-clerk-middleware/blob/main/LICENSE)
 
 A lightweight, easy-to-use authentication middleware for [FastAPI](https://fastapi.tiangolo.com/) that integrates with [Clerk](https://clerk.com) authentication services.
 

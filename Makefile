@@ -1,14 +1,35 @@
 format:
-	bash ./scripts/formatter.sh
-
-lint:
-	bash ./scripts/linter.sh
+	docker build --target=format -t package:format -f dockerfile . && \
+	docker run --rm \
+		-v ./fastapi_clerk_auth:/app/fastapi_clerk_auth \
+		-v ./.bumpversion.cfg:/app/.bumpversion.cfg \
+		-v ./pyproject.toml:/app/pyproject.toml \
+		package:format
+	docker rmi package:format || true
 
 version_patch:
-	bash ./scripts/version_patch.sh
+	docker build --target=bump_patch -t package:bumpversion -f dockerfile . && \
+	docker run --rm \
+		-v ./fastapi_clerk_auth:/app/fastapi_clerk_auth \
+		-v ./.bumpversion.cfg:/app/.bumpversion.cfg \
+		-v ./pyproject.toml:/app/pyproject.toml \
+		package:bumpversion
+	docker rmi package:bumpversion || true
 
 version_minor:
-	bash ./scripts/version_minor.sh
+	docker build --target=bump_minor -t package:bumpversion -f dockerfile . && \
+	docker run --rm \
+		-v ./fastapi_clerk_auth:/app/fastapi_clerk_auth \
+		-v ./.bumpversion.cfg:/app/.bumpversion.cfg \
+		-v ./pyproject.toml:/app/pyproject.toml \
+		package:bumpversion
+	docker rmi package:bumpversion || true
 
 version_major:
-	bash ./scripts/version_major.sh
+	docker build --target=bump_major -t package:bumpversion -f dockerfile . && \
+	docker run --rm \
+		-v ./fastapi_clerk_auth:/app/fastapi_clerk_auth \
+		-v ./.bumpversion.cfg:/app/.bumpversion.cfg \
+		-v ./pyproject.toml:/app/pyproject.toml \
+		package:bumpversion
+	docker rmi package:bumpversion || true
