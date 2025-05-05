@@ -6,9 +6,10 @@ COPY .bumpversion.cfg .bumpversion.cfg
 
 
 FROM base AS format
+COPY ./ruff.toml ./ruff.toml
 RUN pip install -e .[dev]
 WORKDIR /app/fastapi_clerk_auth
-CMD ruff check ./ --fix --config ../pyproject.toml && ruff format ./ --config ../pyproject.toml
+CMD ruff check ./ --fix --config ../ruff.toml && ruff format ./ --config ../ruff.toml
 
 
 FROM base AS bumpversion
