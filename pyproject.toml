@@ -1,16 +1,36 @@
 [project]
 name = "fastapi_clerk_auth"
-version = "0.0.5"
+version = "0.0.6"
 description = "FastAPI Auth Middleware for Clerk (https://clerk.com)"
 readme = "README.md"
 requires-python = ">=3.9"
 authors = [
     { name = "OSS Mafia", email = "dev@oss-mafia.com" },
 ]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["fastapi", "clerk", "authentication", "jwt"]
 dependencies = [
     "fastapi>=0.95.0",
     "PyJWT>=2.0.0",
-    "cryptography==43.0.1",
+    "cryptography>=43.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.2.0",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mock",
+    "bump2version",
 ]
 
 [project.urls]

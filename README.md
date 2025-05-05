@@ -1,16 +1,28 @@
 # FastAPI Clerk Auth Middleware
 
+[![PyPI version](https://img.shields.io/pypi/v/fastapi-clerk-auth.svg)](https://pypi.org/project/fastapi-clerk-auth/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/fastapi-clerk-auth.svg)](https://pypi.org/project/fastapi-clerk-auth/)
+[![License](https://img.shields.io/github/license/OSSMafia/fastapi-clerk-middleware)](https://github.com/OSSMafia/fastapi-clerk-middleware/blob/main/LICENSE)
 
-FastAPI Auth Middleware for [Clerk](https://clerk.com)
+A lightweight, easy-to-use authentication middleware for [FastAPI](https://fastapi.tiangolo.com/) that integrates with [Clerk](https://clerk.com) authentication services.
 
-Easily setup authentication on your API routes using your Clerk JWKS endpoint.
+This middleware allows you to secure your FastAPI routes by validating JWT tokens against your Clerk JWKS endpoint, making it simple to implement authentication in your API.
 
-## Install
+## Features
+
+- 🔒 Secure API routes with Clerk JWT validation
+- 🚀 Simple integration with FastAPI's dependency injection system
+- ⚙️ Flexible configuration options (auto error responses, request state access)
+- 📝 Decoded token payload accessible in your route handlers
+
+## Installation
+
 ```bash
 pip install fastapi-clerk-auth
 ```
 
 ## Basic Usage
+
 ```python
 from fastapi import FastAPI, Depends
 from fastapi_clerk_auth import ClerkConfig, ClerkHTTPBearer, HTTPAuthorizationCredentials
@@ -19,7 +31,8 @@ from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
 
-clerk_config = ClerkConfig(jwks_url="https://example.com/.well-known/jwks.json") # Use your Clerk JWKS endpoint
+# Use your Clerk JWKS endpoint
+clerk_config = ClerkConfig(jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json") 
 
 clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
 
@@ -28,17 +41,99 @@ async def read_root(credentials: HTTPAuthorizationCredentials | None = Depends(c
     return JSONResponse(content=jsonable_encoder(credentials))
 ```
 
-The returned `credentials` model will either be of type `None` or `HTTPAuthorizationCredentials`. If the model is populated it will have the following properties:
-- scheme
-    - Indicates the scheme of the Authorization header (Bearer) 
-- credentials
-    - Raw token received from the Authorization header
-- decoded
-    - The payload of the decoded token
+The returned `credentials` model will be either `None` or an `HTTPAuthorizationCredentials` object with these properties:
 
-## Auto Errors
-By default the middleware automatically returns 403 errors if the token is missing or invalid. You can disable that behavior by setting the following:
+- `scheme`: Indicates the scheme of the Authorization header (Bearer) 
+- `credentials`: Raw token received from the Authorization header
+- `decoded`: The payload of the decoded token
+
+## Configuration Options
+
+### Disabling Auto Errors
+
+By default, the middleware automatically returns 403 errors if the token is missing or invalid. You can disable this behavior:
+
 ```python
-clerk_config = ClerkConfig(jwks_url="https://example.com/.well-known/jwks.json", auto_error=False)
+clerk_config = ClerkConfig(
+    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json", 
+    auto_error=False
+)
 ```
-This will allow requests to reach the endpoint for additional logic or error handling.
+
+This allows requests to reach the endpoint for additional logic or custom error handling:
+
+```python
+@app.get("/protected")
+async def protected_endpoint(credentials: HTTPAuthorizationCredentials | None = Depends(clerk_auth_guard)):
+    if not credentials:
+        return {"message": "You're not authenticated, but you can still see this limited data"}
+    
+    # Full access for authenticated users
+    return {"message": "Full access granted", "user_data": credentials.decoded}
+```
+
+### Adding Auth Data to Request State
+
+You can have the `HTTPAuthorizationCredentials` added to the request state for easier access:
+
+```python
+from fastapi import Depends, Request, APIRouter
+from fastapi_clerk_auth import ClerkConfig, ClerkHTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+
+clerk_config = ClerkConfig(
+    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json",
+    add_state=True
+) 
+
+clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
+
+router = APIRouter(prefix="/todo", dependencies=[Depends(clerk_auth_guard)])
+
+@router.get("/")
+async def read_todo_list(request: Request):
+    auth_data: HTTPAuthorizationCredentials = request.state.clerk_auth
+    user_id = auth_data.decoded.get("sub")
+    
+    # Use user_id to fetch the user's todo items
+    return {"message": f"Todo items for user {user_id}"}
+```
+
+## Advanced Usage
+
+### Role-Based Access Control
+
+You can implement role-based access control by checking the JWT claims:
+
+```python
+from fastapi import Depends, HTTPException, status
+
+def admin_required(credentials: HTTPAuthorizationCredentials = Depends(clerk_auth_guard)):
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    
+    user_roles = credentials.decoded.get("roles", [])
+    if "admin" not in user_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin permission required"
+        )
+    
+    return credentials
+
+@app.get("/admin", dependencies=[Depends(admin_required)])
+async def admin_only():
+    return {"message": "Welcome, admin!"}
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

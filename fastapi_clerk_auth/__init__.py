@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import HTTPException
 from fastapi import Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
 from fastapi.security import HTTPAuthorizationCredentials as FastAPIHTTPAuthorizationCredentials
 from fastapi.security import HTTPBearer
@@ -79,12 +80,30 @@ class ClerkHTTPBearer(HTTPBearer):
                     """
             ),
         ] = True,
+        add_state: Annotated[
+            bool,
+            Doc(
+                """
+                    By default, the decoded authentication data is returned from the `Depends`
+                    on the route function. If you'd like to have the decoded authentication data
+                    available in the request state, set this to `True`. This is useful when you
+                    want to have the decoded authentication data available in the request state
+                    while applying the middleware to multiple routes via a router dependency.
+                """
+            ),
+        ] = False,
         debug_mode: bool = False,
     ):
-        super().__init__(bearerFormat=bearerFormat, scheme_name=scheme_name, description=description, auto_error=auto_error)
+        super().__init__(
+            bearerFormat=bearerFormat,
+            scheme_name=scheme_name,
+            description=description,
+            auto_error=auto_error,
+        )
         self.model = HTTPBearerModel(bearerFormat=bearerFormat, description=description)
         self.scheme_name = scheme_name or self.__class__.__name__
         self.auto_error = auto_error
+        self.add_state = add_state
         self.config = config
         self._check_config()
         self.jwks_url: str = config.jwks_url
@@ -99,6 +118,7 @@ class ClerkHTTPBearer(HTTPBearer):
             headers=config.jwks_headers,
             timeout=config.jwks_client_timeout,
         )
+        self.add_state = add_state
         self.debug_mode = debug_mode
 
     def _check_config(self) -> None:
@@ -110,7 +130,7 @@ class ClerkHTTPBearer(HTTPBearer):
     def _decode_token(self, token: str) -> dict | None:
         try:
             signing_key = self.jwks_client.get_signing_key_from_jwt(token)
-            return jwt.decode(
+            decoded_token = jwt.decode(
                 token,
                 key=signing_key.key,
                 audience=self.audience,
@@ -122,6 +142,7 @@ class ClerkHTTPBearer(HTTPBearer):
                     "verify_iss": self.config.verify_iss,
                 },
             )
+            return dict(jsonable_encoder(decoded_token))
         except Exception as e:
             if self.debug_mode:
                 raise e
@@ -132,23 +153,23 @@ class ClerkHTTPBearer(HTTPBearer):
         scheme, credentials = get_authorization_scheme_param(authorization)
         if not (authorization and scheme and credentials):
             if self.auto_error:
-                raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not authenticated")
-            else:
-                return None
+                raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not Authenticated")
+            return None
         if scheme.lower() != "bearer":
             if self.auto_error:
                 raise HTTPException(
                     status_code=HTTP_403_FORBIDDEN,
-                    detail="Invalid authentication credentials",
+                    detail="Invalid Authentication Credentials",
                 )
-            else:
-                return None
+            return None
 
         decoded_token: dict | None = self._decode_token(token=credentials)
         if not decoded_token and self.auto_error:
             raise HTTPException(
                 status_code=HTTP_403_FORBIDDEN,
-                detail="Invalid authentication credentials",
+                detail="Invalid Authentication Credentials",
             )
-
-        return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials, decoded=decoded_token)
+        response = HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials, decoded=decoded_token)
+        if self.add_state:
+            request.state.clerk_auth = response
+        return response
