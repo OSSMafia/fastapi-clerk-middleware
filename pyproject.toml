@@ -10,7 +10,14 @@ authors = [
 dependencies = [
     "fastapi>=0.95.0",
     "PyJWT>=2.0.0",
-    "cryptography==43.0.1",
+    "cryptography>=43.0.1",
+]
+dev-dependencies = [
+    "ruff==0.2.0",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mock",
+    "bump2version",
 ]
 
 [project.urls]
