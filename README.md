@@ -83,11 +83,10 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 clerk_config = ClerkConfig(
-    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json",
-    add_state=True
+    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json"
 ) 
 
-clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
+clerk_auth_guard = ClerkHTTPBearer(config=clerk_config, add_state=True)
 
 router = APIRouter(prefix="/todo", dependencies=[Depends(clerk_auth_guard)])
 
