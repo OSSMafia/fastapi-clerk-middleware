@@ -29,6 +29,7 @@ class ClerkConfig(BaseModel):
     jwks_lifespan: int = 300
     jwks_headers: Optional[dict[str, Any]] = None
     jwks_client_timeout: int = 30
+    leeway: int = 0
 
 
 class HTTPAuthorizationCredentials(FastAPIHTTPAuthorizationCredentials):
@@ -141,6 +142,7 @@ class ClerkHTTPBearer(HTTPBearer):
                     "verify_aud": self.config.verify_aud,
                     "verify_iss": self.config.verify_iss,
                 },
+                leeway=self.config.leeway
             )
             return dict(jsonable_encoder(decoded_token))
         except Exception as e:
