@@ -29,7 +29,7 @@ class ClerkConfig(BaseModel):
     jwks_lifespan: int = 300
     jwks_headers: Optional[dict[str, Any]] = None
     jwks_client_timeout: int = 30
-    leeway: int = 0
+    leeway: float = 0
 
 
 class HTTPAuthorizationCredentials(FastAPIHTTPAuthorizationCredentials):
