@@ -10,7 +10,7 @@ on:
       - reopened
 
 jobs:
-  build:
+  lint_and_test:
     runs-on: ubuntu-latest
 
     steps:
