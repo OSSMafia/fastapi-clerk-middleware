@@ -1,3 +1,7 @@
+clean:
+	docker compose down --volumes --remove-orphans || true && \
+	docker image prune -a --force || true
+
 format:
 	docker build --target=format -t package:format -f dockerfile . && \
 	docker run --rm \
@@ -18,7 +22,7 @@ lint:
 		package:lint
 	docker rmi package:lint || true
 
-test:
+test: clean
 	docker compose run test_runner; \
 	EXIT_CODE=$$?; \
 	docker compose down; \

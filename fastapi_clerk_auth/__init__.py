@@ -151,22 +151,16 @@ class ClerkHTTPBearer(HTTPBearer):
         scheme, credentials = get_authorization_scheme_param(authorization)
         if not (authorization and scheme and credentials):
             if self.auto_error:
-                raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Not Authenticated")
+                raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Forbidden")
             return None
         if scheme.lower() != "bearer":
             if self.auto_error:
-                raise HTTPException(
-                    status_code=HTTP_403_FORBIDDEN,
-                    detail="Invalid Authentication Credentials",
-                )
+                raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Forbidden")
             return None
 
         decoded_token: dict | None = self._decode_token(token=credentials)
         if not decoded_token and self.auto_error:
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail="Invalid Authentication Credentials",
-            )
+            raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Forbidden")
         response = HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials, decoded=decoded_token)
         if self.add_state:
             request.state.clerk_auth = response
