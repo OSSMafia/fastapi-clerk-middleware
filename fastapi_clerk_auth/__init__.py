@@ -1,18 +1,14 @@
-from typing import Any
-from typing import Optional
+from typing import Annotated, Any, Optional
 
-from fastapi import HTTPException
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
-from fastapi.security import HTTPAuthorizationCredentials as FastAPIHTTPAuthorizationCredentials
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials as FastAPIHTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.utils import get_authorization_scheme_param
 import jwt
 from jwt import PyJWKClient
 from pydantic import BaseModel
 from starlette.status import HTTP_403_FORBIDDEN
-from typing_extensions import Annotated
 from typing_extensions import Doc
 
 
@@ -142,7 +138,7 @@ class ClerkHTTPBearer(HTTPBearer):
                     "verify_aud": self.config.verify_aud,
                     "verify_iss": self.config.verify_iss,
                 },
-                leeway=self.config.leeway
+                leeway=self.config.leeway,
             )
             return dict(jsonable_encoder(decoded_token))
         except Exception as e:

@@ -1,0 +1,33 @@
+networks:
+  default:
+    driver: bridge
+
+services:
+  mock_jwks_server:
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: jwks
+    ports:
+      - "8000:8000"
+    networks:
+      - default
+  mock_api_server:
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: api
+    ports:
+      - "8001:8001"
+    networks:
+      - default
+  test_runner:
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: test
+    networks:
+      - default
+    depends_on:
+      - mock_jwks_server
+      - mock_api_server

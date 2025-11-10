@@ -2,10 +2,27 @@ format:
 	docker build --target=format -t package:format -f dockerfile . && \
 	docker run --rm \
 		-v ./fastapi_clerk_auth:/app/fastapi_clerk_auth \
+		-v ./tests:/app/tests \
 		-v ./.bumpversion.cfg:/app/.bumpversion.cfg \
 		-v ./pyproject.toml:/app/pyproject.toml \
 		package:format
 	docker rmi package:format || true
+
+lint:
+	docker build --target=lint -t package:lint -f dockerfile . && \
+	docker run --rm \
+		-v ./fastapi_clerk_auth:/app/fastapi_clerk_auth \
+		-v ./tests:/app/tests \
+		-v ./.bumpversion.cfg:/app/.bumpversion.cfg \
+		-v ./pyproject.toml:/app/pyproject.toml \
+		package:lint
+	docker rmi package:lint || true
+
+test:
+	docker compose run test_runner; \
+	EXIT_CODE=$$?; \
+	docker compose down; \
+	exit $$EXIT_CODE
 
 version_patch:
 	docker build --target=bump_patch -t package:bumpversion -f dockerfile . && \
