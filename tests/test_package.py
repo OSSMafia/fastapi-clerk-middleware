@@ -16,8 +16,8 @@ def test_protected_route_access_granted(jwt_token):
 def test_protected_route_access_granted_decoded(jwt_token):
     response = requests.get("http://mock_api_server:8001/protected", headers={"Authorization": f"Bearer {jwt_token}"})
     assert response.status_code == 200
-    assert "user" in response.json()
-    assert response.json()["user"]["sub"] == "1234567890"
+    assert "decoded_token" in response.json()
+    assert response.json().get("decoded_token", {}).get("sub") == "1234567890"
 
 
 def test_protected_route_access_denied():

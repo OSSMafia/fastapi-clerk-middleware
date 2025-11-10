@@ -14,7 +14,7 @@ auth = ClerkHTTPBearer(config=config)
 
 @app.get("/protected")
 async def protected_route(credentials=Depends(auth)):
-    return {"message": "Access granted", "user": credentials.decoded}
+    return {"status": "OK", "decoded_token": credentials.decoded}
 
 
 if __name__ == "__main__":
