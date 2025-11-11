@@ -2,7 +2,6 @@ from typing import Annotated, Any, Optional
 
 from fastapi import HTTPException, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
 from fastapi.security import HTTPAuthorizationCredentials as FastAPIHTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.utils import get_authorization_scheme_param
 import jwt
@@ -19,6 +18,7 @@ class ClerkConfig(BaseModel):
     verify_exp: bool = True
     verify_aud: bool = False
     verify_iss: bool = False
+    verify_iat: bool = True
     jwks_cache_keys: bool = False
     jwks_max_cached_keys: int = 16
     jwks_cache_set: bool = True
@@ -97,8 +97,6 @@ class ClerkHTTPBearer(HTTPBearer):
             description=description,
             auto_error=auto_error,
         )
-        self.model = HTTPBearerModel(bearerFormat=bearerFormat, description=description)
-        self.scheme_name = scheme_name or self.__class__.__name__
         self.auto_error = auto_error
         self.add_state = add_state
         self.config = config
@@ -137,6 +135,7 @@ class ClerkHTTPBearer(HTTPBearer):
                     "verify_exp": self.config.verify_exp,
                     "verify_aud": self.config.verify_aud,
                     "verify_iss": self.config.verify_iss,
+                    "verify_iat": self.config.verify_iat,
                 },
                 leeway=self.config.leeway,
             )
@@ -159,6 +158,7 @@ class ClerkHTTPBearer(HTTPBearer):
             return None
 
         decoded_token: dict | None = self._decode_token(token=credentials)
+
         if not decoded_token and self.auto_error:
             raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Forbidden")
         response = HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials, decoded=decoded_token)
