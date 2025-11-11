@@ -7,9 +7,6 @@ requires-python = ">=3.9"
 authors = [
     { name = "Matt Nick", email = "jonathannick62@gmail.com" },
 ]
-maintainers = [
-    { name = "Matt Nick", email = "jonathannick62@gmail.com" },
-]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: FastAPI",

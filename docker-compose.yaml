@@ -26,6 +26,10 @@ services:
       context: .
       dockerfile: dockerfile
       target: test
+    environment:
+      - JWT_SUB_CLAIM=1234567890
+      - JWT_AUDIENCE_CLAIM=test
+      - JWT_ISSUER_CLAIM=test_issuer
     networks:
       - default
     depends_on:

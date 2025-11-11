@@ -37,11 +37,11 @@ clerk_config = ClerkConfig(jwks_url="https://your-clerk-frontend-api.clerk.accou
 clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
 
 @app.get("/")
-async def read_root(credentials: HTTPAuthorizationCredentials | None = Depends(clerk_auth_guard)):
+async def read_root(credentials: HTTPAuthorizationCredentials = Depends(clerk_auth_guard)):
     return JSONResponse(content=jsonable_encoder(credentials))
 ```
 
-The returned `credentials` model will be either `None` or an `HTTPAuthorizationCredentials` object with these properties:
+The returned `credentials` model will be an `HTTPAuthorizationCredentials` object with these properties:
 
 - `scheme`: Indicates the scheme of the Authorization header (Bearer) 
 - `credentials`: Raw token received from the Authorization header
@@ -49,15 +49,53 @@ The returned `credentials` model will be either `None` or an `HTTPAuthorizationC
 
 ## Configuration Options
 
+### Debug Mode
+
+By default, the middleware suppresses exceptions in order to prevent logging sensitive information. You can change this behavior in the `ClerkHTTPBearer`:
+
+```python
+clerk_auth_guard = ClerkHTTPBearer(config=clerk_config, debug_mode=True)  # Set debug_mode=True
+```
+
+
+### Fixing Issued At Time (IAT) Errors
+
+In some instances the system clock of an API may be slightly out-of-sync which can cause issues with verifying the `iat` claim.
+
+This can be solved one of two ways:
+
+1: Disable verifying the `iat` claim, there could be security implications by disabling so make sure it is secure for your use case.
+
+```python
+clerk_config = ClerkConfig(
+    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json",
+    verify_iat=False,
+) 
+
+clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
+```
+
+2: Adding `leeway` which is a number of seconds to allow tolerance for drift, it can compensate for out-of-sync clocks.
+
+```python
+clerk_config = ClerkConfig(
+    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json",
+    leeway=5.0,
+) 
+
+clerk_auth_guard = ClerkHTTPBearer(config=clerk_config)
+```
+
 ### Disabling Auto Errors
 
 By default, the middleware automatically returns 403 errors if the token is missing or invalid. You can disable this behavior:
 
 ```python
 clerk_config = ClerkConfig(
-    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json", 
-    auto_error=False
-)
+    jwks_url="https://your-clerk-frontend-api.clerk.accounts.dev/.well-known/jwks.json"
+) 
+
+clerk_auth_guard = ClerkHTTPBearer(config=clerk_config, auto_error=False)  # Set auto_error=False
 ```
 
 This allows requests to reach the endpoint for additional logic or custom error handling:
@@ -97,6 +135,15 @@ async def read_todo_list(request: Request):
     
     # Use user_id to fetch the user's todo items
     return {"message": f"Todo items for user {user_id}"}
+```
+
+The class stored in `request.state.clerk_auth` looks like this:
+```python
+HTTPAuthorizationCredentials(
+    decoded: Optional[dict],  # Decoded JWT Token
+    scheme: str = "Bearer",
+    credentials: str,  # Raw JWT Token
+)
 ```
 
 ## Advanced Usage
